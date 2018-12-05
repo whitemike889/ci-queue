@@ -33,7 +33,7 @@ def get_lua_scripts():
 
 setuplib.setup(
     name='ciqueue',
-    version='0.1',
+    version='0.2-rc.1',
     packages=['ciqueue', 'ciqueue._pytest'],
     install_requires=[
         'dill>=0.2.7',
