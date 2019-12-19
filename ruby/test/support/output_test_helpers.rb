@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module OutputTestHelpers
   PROJECT_ROOT_PATH = File.expand_path('../../../', __FILE__)
   private
@@ -29,5 +30,9 @@ module OutputTestHelpers
 
   def freeze_xml_timing(output)
     output.gsub(/time="[\d\-\.e]+"/, 'time="X.XX"')
+  end
+
+  def normalize(output)
+    freeze_timing(decolorize_output(output))
   end
 end

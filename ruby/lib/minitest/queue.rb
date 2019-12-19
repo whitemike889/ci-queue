@@ -1,5 +1,5 @@
+# frozen_string_literal: true
 require 'minitest'
-gem 'minitest-reporters', '~> 1.1'
 require 'minitest/reporters'
 
 require 'minitest/queue/failure_formatter'
@@ -9,6 +9,11 @@ require 'minitest/queue/build_status_recorder'
 require 'minitest/queue/build_status_reporter'
 require 'minitest/queue/order_reporter'
 require 'minitest/queue/junit_reporter'
+require 'minitest/queue/test_data_reporter'
+require 'minitest/queue/grind_recorder'
+require 'minitest/queue/grind_reporter'
+require 'minitest/queue/test_time_recorder'
+require 'minitest/queue/test_time_reporter'
 
 module Minitest
   class Requeue < Skip
@@ -45,7 +50,7 @@ module Minitest
     end
 
     def result_label
-      "Skipped"
+      "Flaked"
     end
 
     def backtrace
@@ -97,6 +102,7 @@ module Minitest
 
   module Queue
     class SingleExample
+
       def initialize(runnable, method_name)
         @runnable = runnable
         @method_name = method_name
@@ -144,8 +150,8 @@ module Minitest
       if queue
         run_from_queue(*args)
 
-        if queue.config.circuit_breaker.open?
-          STDERR.puts "This worker is exiting early because it encountered too many consecutive test failures, probably because of some corrupted state."
+        if queue.config.circuit_breakers.any?(&:open?)
+          STDERR.puts queue.config.circuit_breakers.map(&:message).join(' ').strip
         end
       else
         super

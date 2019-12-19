@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module CI
   module Queue
     class Static
@@ -48,7 +50,7 @@ module CI
       end
 
       def poll
-        while !config.circuit_breaker.open? && test = @queue.shift
+        while !config.circuit_breakers.any?(&:open?) && test = @queue.shift
           yield index.fetch(test)
         end
       end

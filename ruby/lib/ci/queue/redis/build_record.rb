@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module CI
   module Queue
     module Redis
@@ -20,12 +21,25 @@ module CI
           redis.hkeys(key('error-reports'))
         end
 
+        def pop_warnings
+          warnings = redis.multi do
+            redis.lrange(key('warnings'), 0, -1)
+            redis.del(key('warnings'))
+          end.first
+
+          warnings.map { |p| Marshal.load(p) }
+        end
+
+        def record_warning(type, attributes)
+          redis.rpush(key('warnings'), Marshal.dump([type, attributes]))
+        end
+
         def record_error(id, payload, stats: nil)
           redis.pipelined do
             redis.hset(
               key('error-reports'),
-              id.force_encoding(Encoding::BINARY),
-              payload.force_encoding(Encoding::BINARY),
+              id.dup.force_encoding(Encoding::BINARY),
+              payload.dup.force_encoding(Encoding::BINARY),
             )
             record_stats(stats)
           end
@@ -34,7 +48,7 @@ module CI
 
         def record_success(id, stats: nil)
           redis.pipelined do
-            redis.hdel(key('error-reports'), id.force_encoding(Encoding::BINARY))
+            redis.hdel(key('error-reports'), id.dup.force_encoding(Encoding::BINARY))
             record_stats(stats)
           end
           nil

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'uri'
 require 'cgi'
 
@@ -9,6 +11,7 @@ require 'ci/queue/common'
 require 'ci/queue/build_record'
 require 'ci/queue/static'
 require 'ci/queue/file'
+require 'ci/queue/grind'
 require 'ci/queue/bisect'
 
 module CI
@@ -16,6 +19,10 @@ module CI
     extend self
 
     attr_accessor :shuffler
+
+    module Warnings
+      RESERVED_LOST_TEST = :RESERVED_LOST_TEST
+    end
 
     def shuffle(tests, random)
       if shuffler
